@@ -58,6 +58,26 @@ export type GetExpenseCategoriesResponse =
       error: string;
     };
 
+export type ExpenseDashboardSummary = {
+  totalAmount: number;
+  expenseCount: number;
+  highestExpense: ExpenseRecord | null;
+  topCategories: Array<{
+    category: string;
+    totalAmount: number;
+  }>;
+};
+
+export type GetExpenseDashboardResponse =
+  | {
+      success: true;
+      data: ExpenseDashboardSummary;
+    }
+  | {
+      success: false;
+      error: string;
+    };
+
 export type ExpenseTableProps = {
   expenses: ExpenseRecord[];
   emptyMessage?: string;

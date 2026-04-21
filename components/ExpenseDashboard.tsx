@@ -4,12 +4,17 @@ import { useEffect, useState } from "react";
 import { ExpenseForm } from "@/components/ExpenseForm";
 import { ExpenseTable } from "@/components/ExpenseTable";
 import type {
+  ExpenseDashboardSummary,
   ExpenseRecord,
   ExpenseSortOrder,
   GetExpenseCategoriesResponse,
+  GetExpenseDashboardResponse,
   GetExpensesResponse,
 } from "@/types/expense";
-import { formatExpenseCurrency } from "@/utils/expenseDisplay";
+import {
+  formatExpenseCategory,
+  formatExpenseCurrency,
+} from "@/utils/expenseDisplay";
 
 const sortOptions: Array<{ label: string; value: ExpenseSortOrder }> = [
   { label: "Expense date: newest first", value: "date_desc" },
@@ -23,6 +28,7 @@ const sortOptions: Array<{ label: string; value: ExpenseSortOrder }> = [
 export function ExpenseDashboard() {
   const [expenses, setExpenses] = useState<ExpenseRecord[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
+  const [summary, setSummary] = useState<ExpenseDashboardSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -31,6 +37,23 @@ export function ExpenseDashboard() {
 
   useEffect(() => {
     let isActive = true;
+
+    async function loadSummary() {
+      try {
+        const response = await fetch("/api/expenses/dashboard");
+        const payload = (await response.json()) as GetExpenseDashboardResponse;
+
+        if (!response.ok || !payload.success) {
+          return;
+        }
+
+        if (isActive) {
+          setSummary(payload.data);
+        }
+      } catch {
+        // Keep the main expense list usable even if summary data fails to load.
+      }
+    }
 
     async function loadCategories() {
       try {
@@ -49,6 +72,7 @@ export function ExpenseDashboard() {
       }
     }
 
+    void loadSummary();
     void loadCategories();
 
     return () => {
@@ -139,6 +163,59 @@ export function ExpenseDashboard() {
 
   return (
     <section className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-10 sm:px-6 lg:px-8">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-zinc-500">
+            Total spend
+          </p>
+          <p className="mt-2 text-3xl font-semibold text-zinc-950">
+            {formatExpenseCurrency(summary?.totalAmount ?? 0)}
+          </p>
+          <p className="mt-2 text-sm text-zinc-500">
+            {summary?.expenseCount ?? 0} recorded expenses
+          </p>
+        </div>
+
+        <div className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-zinc-500">
+            Largest expense
+          </p>
+          <p className="mt-2 text-3xl font-semibold text-zinc-950">
+            {formatExpenseCurrency(summary?.highestExpense?.amount ?? 0)}
+          </p>
+          <p className="mt-2 text-sm text-zinc-500">
+            {summary?.highestExpense
+              ? formatExpenseCategory(summary.highestExpense.category)
+              : "No expenses yet"}
+          </p>
+        </div>
+
+        <div className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-zinc-500">
+            Top categories
+          </p>
+          <div className="mt-3 flex flex-col gap-2">
+            {summary && summary.topCategories.length > 0 ? (
+              summary.topCategories.map((item) => (
+                <div
+                  key={item.category}
+                  className="flex items-center justify-between rounded-2xl bg-zinc-50 px-3 py-2"
+                >
+                  <span className="text-sm text-zinc-700">
+                    {formatExpenseCategory(item.category)}
+                  </span>
+                  <span className="text-sm font-medium text-zinc-950">
+                    {formatExpenseCurrency(item.totalAmount)}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-zinc-500">No category data available.</p>
+            )}
+          </div>
+        </div>
+      </div>
+
       <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
         <div className="mb-6">
           <p className="text-sm font-medium uppercase tracking-[0.2em] text-zinc-500">
