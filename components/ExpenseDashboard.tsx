@@ -157,6 +157,7 @@ export function ExpenseDashboard() {
   );
   const isInitialLoading = loading && expenses.length === 0;
   const isRefreshing = loading && expenses.length > 0;
+  const hasSummaryData = (summary?.expenseCount ?? 0) > 0;
   const emptyMessage = selectedCategory.trim()
     ? "No expenses found for the current filters."
     : "No expenses recorded yet.";
@@ -175,58 +176,64 @@ export function ExpenseDashboard() {
         <ExpenseForm onSuccess={handleExpenseCreated} />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <div className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
-          <p className="text-xs font-medium uppercase tracking-[0.18em] text-zinc-500">
-            Total spent
-          </p>
-          <p className="mt-2 break-words text-2xl font-semibold text-zinc-950 sm:text-3xl">
-            {formatExpenseCurrency(summary?.totalAmount ?? 0)}
-          </p>
-          <p className="mt-2 text-sm text-zinc-500">
-            {summary?.expenseCount ?? 0} expenses added
-          </p>
-        </div>
+      {hasSummaryData ? (
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
+            <p className="text-xs font-medium uppercase tracking-[0.18em] text-zinc-500">
+              Total spent
+            </p>
+            <p className="mt-2 break-words text-2xl font-semibold text-zinc-950 sm:text-3xl">
+              {formatExpenseCurrency(summary?.totalAmount ?? 0)}
+            </p>
+            <p className="mt-2 text-sm text-zinc-500">
+              {summary?.expenseCount ?? 0} expenses added
+            </p>
+          </div>
 
-        <div className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
-          <p className="text-xs font-medium uppercase tracking-[0.18em] text-zinc-500">
-            Biggest expense
-          </p>
-          <p className="mt-2 break-words text-2xl font-semibold text-zinc-950 sm:text-3xl">
-            {formatExpenseCurrency(summary?.highestExpense?.amount ?? 0)}
-          </p>
-          <p className="mt-2 text-sm text-zinc-500">
-            {summary?.highestExpense
-              ? formatExpenseCategory(summary.highestExpense.category)
-              : "No expenses yet"}
-          </p>
-        </div>
+          <div className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
+            <p className="text-xs font-medium uppercase tracking-[0.18em] text-zinc-500">
+              Biggest expense
+            </p>
+            <p className="mt-2 break-words text-2xl font-semibold text-zinc-950 sm:text-3xl">
+              {formatExpenseCurrency(summary?.highestExpense?.amount ?? 0)}
+            </p>
+            <p className="mt-2 text-sm text-zinc-500">
+              {summary?.highestExpense
+                ? formatExpenseCategory(summary.highestExpense.category)
+                : "No expenses yet"}
+            </p>
+          </div>
 
-        <div className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
-          <p className="text-xs font-medium uppercase tracking-[0.18em] text-zinc-500">
-            Top categories
-          </p>
-          <div className="mt-3 flex flex-col gap-2">
-            {summary && summary.topCategories.length > 0 ? (
-              summary.topCategories.map((item) => (
-                <div
-                  key={item.category}
-                  className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-zinc-50 px-3 py-2"
-                >
-                  <span className="min-w-0 text-sm text-zinc-700">
-                    {formatExpenseCategory(item.category)}
-                  </span>
-                  <span className="text-sm font-medium text-zinc-950">
-                    {formatExpenseCurrency(item.totalAmount)}
-                  </span>
-                </div>
-              ))
-            ) : (
-              <p className="text-sm text-zinc-500">No category data available.</p>
-            )}
+          <div className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
+            <p className="text-xs font-medium uppercase tracking-[0.18em] text-zinc-500">
+              Top categories
+            </p>
+            <div className="mt-3 flex flex-col gap-2">
+              {summary && summary.topCategories.length > 0 ? (
+                summary.topCategories.map((item) => (
+                  <div
+                    key={item.category}
+                    className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-zinc-50 px-3 py-2"
+                  >
+                    <span className="min-w-0 text-sm text-zinc-700">
+                      {formatExpenseCategory(item.category)}
+                    </span>
+                    <span className="text-sm font-medium text-zinc-950">
+                      {formatExpenseCurrency(item.totalAmount)}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-zinc-500">No category data available.</p>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      ) : (
+        <div className="rounded-3xl border border-zinc-200 bg-white p-5 text-sm text-zinc-500 shadow-sm">
+          No summary data available yet.
+        </div>
+      )}
 
       <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
