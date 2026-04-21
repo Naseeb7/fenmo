@@ -62,6 +62,10 @@ export type ExpenseDashboardSummary = {
   totalAmount: number;
   expenseCount: number;
   highestExpense: ExpenseRecord | null;
+  categoryTotals: Array<{
+    category: string;
+    totalAmount: number;
+  }>;
   topCategories: Array<{
     category: string;
     totalAmount: number;

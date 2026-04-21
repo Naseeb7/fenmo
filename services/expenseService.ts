@@ -7,6 +7,10 @@ type DashboardFacetResult = {
     expenseCount: number;
   }>;
   highestExpense: Array<ExpenseRecord>;
+  categoryTotals: Array<{
+    category: string;
+    totalAmount: number;
+  }>;
   topCategories: Array<{
     category: string;
     totalAmount: number;
@@ -38,6 +42,22 @@ export async function getExpenseDashboardSummary(): Promise<ExpenseDashboardSumm
           { $limit: 1 },
           { $project: { __v: 0, idempotencyKey: 0 } },
         ],
+        categoryTotals: [
+          {
+            $group: {
+              _id: "$category",
+              totalAmount: { $sum: "$amount" },
+            },
+          },
+          { $sort: { totalAmount: -1, _id: 1 } },
+          {
+            $project: {
+              _id: 0,
+              category: "$_id",
+              totalAmount: 1,
+            },
+          },
+        ],
         topCategories: [
           {
             $group: {
@@ -65,6 +85,7 @@ export async function getExpenseDashboardSummary(): Promise<ExpenseDashboardSumm
     totalAmount: totals?.totalAmount ?? 0,
     expenseCount: totals?.expenseCount ?? 0,
     highestExpense: dashboardData?.highestExpense[0] ?? null,
+    categoryTotals: dashboardData?.categoryTotals ?? [],
     topCategories: dashboardData?.topCategories ?? [],
   };
 }

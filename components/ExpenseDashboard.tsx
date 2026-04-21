@@ -163,6 +163,18 @@ export function ExpenseDashboard() {
 
   return (
     <section className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-10 sm:px-6 lg:px-8">
+      <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+        <div className="mb-6">
+          <p className="text-sm font-medium uppercase tracking-[0.2em] text-zinc-500">
+            Expense Tracker
+          </p>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-950">
+            Track spending with a backend-first workflow.
+          </h1>
+        </div>
+        <ExpenseForm onSuccess={handleExpenseCreated} />
+      </div>
+
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         <div className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
           <p className="text-xs font-medium uppercase tracking-[0.18em] text-zinc-500">
@@ -217,15 +229,37 @@ export function ExpenseDashboard() {
       </div>
 
       <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
-        <div className="mb-6">
-          <p className="text-sm font-medium uppercase tracking-[0.2em] text-zinc-500">
-            Expense Tracker
-          </p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-950">
-            Track spending with a backend-first workflow.
-          </h1>
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-medium uppercase tracking-[0.2em] text-zinc-500">
+              Category Totals
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-zinc-950">
+              Spend by category
+            </h2>
+          </div>
+          <p className="text-sm text-zinc-500">All-time totals from the dashboard summary</p>
         </div>
-        <ExpenseForm onSuccess={handleExpenseCreated} />
+
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {summary && summary.categoryTotals.length > 0 ? (
+            summary.categoryTotals.map((item) => (
+              <div
+                key={item.category}
+                className="flex items-center justify-between rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3"
+              >
+                <span className="text-sm font-medium text-zinc-700">
+                  {formatExpenseCategory(item.category)}
+                </span>
+                <span className="text-sm font-semibold text-zinc-950">
+                  {formatExpenseCurrency(item.totalAmount)}
+                </span>
+              </div>
+            ))
+          ) : (
+            <p className="text-sm text-zinc-500">No category totals available yet.</p>
+          )}
+        </div>
       </div>
 
       <div className="grid gap-4 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm md:grid-cols-[minmax(0,1fr)_auto_auto] md:items-end">
