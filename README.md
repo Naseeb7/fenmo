@@ -4,8 +4,8 @@ A production-style full-stack expense tracker built as an SDE technical assessme
 
 ## Live Demo and Repository
 
-- Live Demo: `LIVE_URL`
-- Repository: `REPO_URL`
+- Live Demo: `https://fenmo-sigma.vercel.app/`
+- Repository: `https://github.com/Naseeb7/fenmo`
 
 ## Features
 
@@ -225,9 +225,7 @@ Response shape:
       "createdAt": "2026-04-01T09:00:00.000Z",
       "updatedAt": "2026-04-01T09:00:00.000Z"
     },
-    "topCategories": [
-      { "category": "rent", "totalAmount": 120000 }
-    ],
+    "topCategories": [{ "category": "rent", "totalAmount": 120000 }],
     "categoryTotals": [
       { "category": "rent", "totalAmount": 120000 },
       { "category": "food", "totalAmount": 45500 }
@@ -311,8 +309,8 @@ npm run dev
 
 The application requires the following environment variables:
 
-| Variable | Description |
-|----------|-------------|
+| Variable    | Description               |
+| ----------- | ------------------------- |
 | MONGODB_URI | MongoDB connection string |
 
 Environment variables are validated at startup to ensure required configuration exists before the application runs.
