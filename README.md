@@ -187,7 +187,7 @@ This assessment intentionally prioritizes safe write behavior, clean API boundar
 npm install
 ```
 
-2. Set the required environment variable:
+2. Create a local environment file from `.env.example` and set the required variable:
 
 ```bash
 MONGODB_URI=
