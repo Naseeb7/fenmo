@@ -1,5 +1,7 @@
 import { connectDB } from "@/lib/db";
 import { Expense } from "@/models/Expense";
+import { formatValidationErrors } from "@/utils/apiResponse";
+import { sanitizeExpense } from "@/utils/expenseResponse";
 import { generateIdempotencyKey } from "@/utils/idempotencyKey";
 import { createExpenseSchema } from "@/validators/expenseValidator";
 import { ZodError } from "zod";
@@ -8,16 +10,51 @@ type DuplicateKeyError = {
   code?: number;
 };
 
-function formatValidationErrors(error: ZodError) {
-  return error.issues.reduce<Record<string, string>>((accumulator, issue) => {
-    const field = issue.path.join(".") || "form";
+const DEFAULT_EXPENSE_SORT = "date_desc";
 
-    if (!(field in accumulator)) {
-      accumulator[field] = issue.message;
-    }
+const expenseSortOptions = {
+  date_desc: { date: -1 as const },
+  date_asc: { date: 1 as const },
+  created_at_desc: { createdAt: -1 as const },
+  created_at_asc: { createdAt: 1 as const },
+};
 
-    return accumulator;
-  }, {});
+type ExpenseSortOption = keyof typeof expenseSortOptions;
+
+export async function GET(request: Request) {
+  try {
+    await connectDB();
+
+    const { searchParams } = new URL(request.url);
+    const rawCategory = searchParams.get("category");
+    const rawSort = searchParams.get("sort");
+    const category = rawCategory ? rawCategory.trim().toLowerCase() : undefined;
+    const sort =
+      rawSort && rawSort in expenseSortOptions
+        ? (rawSort as ExpenseSortOption)
+        : DEFAULT_EXPENSE_SORT;
+
+    const query = category ? { category } : {};
+    const sortOption = expenseSortOptions[sort];
+
+    const expenses = await Expense.find(query).sort(sortOption).lean();
+
+    return Response.json(
+      {
+        success: true,
+        data: expenses.map((expense) => sanitizeExpense(expense)),
+      },
+      { status: 200 }
+    );
+  } catch {
+    return Response.json(
+      {
+        success: false,
+        error: "Internal server error",
+      },
+      { status: 500 }
+    );
+  }
 }
 
 export async function POST(request: Request) {
@@ -52,7 +89,7 @@ export async function POST(request: Request) {
       return Response.json(
         {
           success: true,
-          data: existingExpense,
+          data: sanitizeExpense(existingExpense),
         },
         { status: 200 }
       );
@@ -70,7 +107,7 @@ export async function POST(request: Request) {
       return Response.json(
         {
           success: true,
-          data: expense.toObject(),
+          data: sanitizeExpense(expense.toObject()),
         },
         { status: 201 }
       );
@@ -82,7 +119,7 @@ export async function POST(request: Request) {
           return Response.json(
             {
               success: true,
-              data: duplicateExpense,
+              data: sanitizeExpense(duplicateExpense),
             },
             { status: 200 }
           );
