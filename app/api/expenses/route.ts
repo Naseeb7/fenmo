@@ -44,14 +44,27 @@ export async function GET(request: Request) {
 
     const sortOption = expenseSortOptions[sort];
 
-    const expenses = await Expense.find(query).sort(sortOption).lean();
+    const expenses = await Expense.find(query)
+      .sort(sortOption)
+      .select("-idempotencyKey -__v")
+      .lean();
+
+    if (expenses.length === 0) {
+      return Response.json(
+        {
+          success: true,
+          data: [],
+        },
+        { status: 200 },
+      );
+    }
 
     return Response.json(
       {
         success: true,
         data: expenses.map((expense) => sanitizeExpense(expense)),
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch {
     return Response.json(
@@ -59,7 +72,7 @@ export async function GET(request: Request) {
         success: false,
         error: "Internal server error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -76,7 +89,7 @@ export async function POST(request: Request) {
           success: false,
           error: "Invalid JSON body",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -99,7 +112,7 @@ export async function POST(request: Request) {
           success: true,
           data: sanitizeExpense(existingExpense),
         },
-        { status: 200 }
+        { status: 200 },
       );
     }
 
@@ -117,11 +130,13 @@ export async function POST(request: Request) {
           success: true,
           data: sanitizeExpense(expense.toObject()),
         },
-        { status: 201 }
+        { status: 201 },
       );
     } catch (error) {
       if ((error as DuplicateKeyError).code === 11000) {
-        const duplicateExpense = await Expense.findOne({ idempotencyKey }).lean();
+        const duplicateExpense = await Expense.findOne({
+          idempotencyKey,
+        }).lean();
 
         if (duplicateExpense) {
           return Response.json(
@@ -129,7 +144,7 @@ export async function POST(request: Request) {
               success: true,
               data: sanitizeExpense(duplicateExpense),
             },
-            { status: 200 }
+            { status: 200 },
           );
         }
       }
@@ -144,7 +159,7 @@ export async function POST(request: Request) {
           error: "Validation failed",
           errors: formatValidationErrors(error),
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -153,7 +168,7 @@ export async function POST(request: Request) {
         success: false,
         error: "Internal server error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

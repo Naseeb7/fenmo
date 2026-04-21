@@ -7,6 +7,16 @@ export async function GET() {
 
     const categories = await Expense.distinct("category");
 
+    if (categories.length === 0) {
+      return Response.json(
+        {
+          success: true,
+          data: [],
+        },
+        { status: 200 }
+      );
+    }
+
     return Response.json(
       {
         success: true,
