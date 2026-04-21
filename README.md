@@ -1,6 +1,6 @@
 # Expense Tracker
 
-A minimal full-stack expense tracker built as an SDE technical assessment with production-style correctness as the primary goal. The system is designed around idempotent writes, paise-based money storage, retry-safe API behavior, backend-driven dashboard summaries, and a modular architecture rather than broad feature scope.
+A production-style full-stack expense tracker built as an SDE technical assessment with correctness under unreliable network conditions as the primary goal. The system emphasizes retry-safe writes, deterministic financial data handling using integer paise storage, backend-driven dashboard summaries, and a modular service-oriented architecture rather than feature breadth.
 
 ## Live Demo and Repository
 
@@ -67,6 +67,18 @@ Each expense uses a deterministic `idempotencyKey` backed by a unique index. Thi
 
 Creation and update timestamps are managed by Mongoose rather than manually maintained in route handlers. This keeps persistence concerns centralized and reduces timestamp drift or accidental inconsistencies.
 
+## Database Indexing Strategy
+
+The following indexes are defined to support correctness and query performance:
+
+- `idempotencyKey` (unique index) ensures retry-safe writes
+- `category` index supports filtering
+- `date` index supports sorting
+- `createdAt` index supports alternative sort modes
+- `amount` index supports amount-based ordering
+
+These indexes align with expected query patterns used by list and dashboard endpoints.
+
 ## Idempotency Strategy
 
 `POST /api/expenses` generates a deterministic SHA-256 idempotency key from:
@@ -78,7 +90,20 @@ Creation and update timestamps are managed by Mongoose rather than manually main
 
 The key is derived from normalized request data and enforced by a unique MongoDB index. If a request is retried with the same payload, the API returns the existing expense instead of creating a duplicate row. This is particularly important under unreliable network conditions where clients may retry writes automatically.
 
-## API Endpoints
+## Reliability Under Retry Conditions
+
+The system is designed to behave predictably under unreliable network conditions where clients may retry requests automatically.
+
+This is achieved through:
+
+- deterministic SHA-256 idempotency keys
+- MongoDB unique index enforcement
+- duplicate-key retry fallback logic
+- normalized request payload hashing
+
+Together these ensure duplicate submissions resolve to the original record instead of inserting multiple entries.
+
+## API Contract
 
 ### `POST /api/expenses`
 
@@ -102,6 +127,23 @@ Behavior:
 - Generates deterministic idempotency key
 - Returns existing record on duplicate retry
 
+Response shape:
+
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "mongo-id",
+    "amount": 12550,
+    "category": "food",
+    "description": "Lunch",
+    "date": "2026-04-21T00:00:00.000Z",
+    "createdAt": "2026-04-21T10:00:00.000Z",
+    "updatedAt": "2026-04-21T10:00:00.000Z"
+  }
+}
+```
+
 ### `GET /api/expenses`
 
 Returns expense records with optional filtering and sorting.
@@ -119,6 +161,31 @@ Supported sort values:
 - `createdAt_asc`
 - `amount_desc`
 - `amount_asc`
+
+Example:
+
+```http
+GET /api/expenses?category=food&sort=amount_desc
+```
+
+Response shape:
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "mongo-id",
+      "amount": 12550,
+      "category": "food",
+      "description": "Lunch",
+      "date": "2026-04-21T00:00:00.000Z",
+      "createdAt": "2026-04-21T10:00:00.000Z",
+      "updatedAt": "2026-04-21T10:00:00.000Z"
+    }
+  ]
+}
+```
 
 ### `GET /api/expenses/categories`
 
@@ -141,11 +208,39 @@ Returns backend-driven dashboard summary data including:
 - top categories
 - category totals
 
+Response shape:
+
+```json
+{
+  "success": true,
+  "data": {
+    "totalAmount": 523500,
+    "expenseCount": 18,
+    "highestExpense": {
+      "_id": "mongo-id",
+      "amount": 120000,
+      "category": "rent",
+      "description": "Monthly rent",
+      "date": "2026-04-01T00:00:00.000Z",
+      "createdAt": "2026-04-01T09:00:00.000Z",
+      "updatedAt": "2026-04-01T09:00:00.000Z"
+    },
+    "topCategories": [
+      { "category": "rent", "totalAmount": 120000 }
+    ],
+    "categoryTotals": [
+      { "category": "rent", "totalAmount": 120000 },
+      { "category": "food", "totalAmount": 45500 }
+    ]
+  }
+}
+```
+
 ## Dashboard Summary Endpoint
 
 Summary cards and category totals are computed on the backend instead of being derived entirely on the client. This improves scalability and correctness because aggregation logic lives next to the database, avoids duplicating business rules in the UI, and keeps the dashboard contract explicit as the system grows.
 
-## Frontend Architecture Decisions
+## Architecture Decisions
 
 ### Server component root page
 
@@ -155,17 +250,29 @@ Summary cards and category totals are computed on the backend instead of being d
 
 `ExpenseDashboard` owns client-side state for expenses, filters, sorting, loading, and refresh behavior. This keeps interaction logic centralized.
 
-### Debounced filtering
+### Paise instead of floats
 
-Filtering was initially designed with debounced input-based behavior to avoid unnecessary requests. The current category filter is backend-driven through category options, but the architecture still reflects the same principle: avoid wasteful request patterns.
+Money is stored as integer paise so arithmetic stays deterministic. This avoids rounding drift and floating-point bugs in totals, sorting, and future reporting logic.
+
+### Deterministic idempotency keys
+
+Retry safety is built on deterministic keys generated from normalized business fields. This allows the backend to safely return the original record under repeated writes instead of creating duplicates.
+
+### Backend-driven dashboard summaries
+
+Dashboard summary cards and category totals come from a backend aggregation endpoint instead of being derived entirely in the client. This keeps business logic close to the database and scales better as summary requirements grow.
+
+### Sanitized Mongo responses
+
+Mongo-specific internal fields such as `__v` and internal retry-only fields such as `idempotencyKey` are excluded from API responses. This keeps the contract cleaner and avoids leaking storage details into UI code.
+
+### Stable refresh strategy
+
+The dashboard avoids tearing down visible table content during refreshes. Existing results remain visible while background updates complete, which reduces layout shift and makes the UI feel more stable.
 
 ### AbortController usage
 
 Expense list fetching uses `AbortController` so in-flight requests can be cancelled when filter or sort state changes, reducing stale-response issues.
-
-### Stable refresh strategy
-
-The dashboard avoids dropping visible table content during refreshes. Existing rows remain visible while new data loads, which reduces layout shift and makes the UI feel more stable.
 
 ## Tradeoffs Due to Time Constraints
 
@@ -173,11 +280,12 @@ The following were intentionally excluded to prioritize correctness and reliabil
 
 - no authentication
 - no pagination
+- no rate limiting
 - no caching layer
 - no optimistic updates
 - minimal styling focus
 
-This assessment intentionally prioritizes safe write behavior, clean API boundaries, and reliable money handling over feature breadth or deeper product polish.
+These were intentionally left out so the implementation could focus on retry-safe writes, deterministic money handling, API correctness, and backend reliability under unstable network conditions.
 
 ## How to Run Locally
 
@@ -198,6 +306,28 @@ MONGODB_URI=
 ```bash
 npm run dev
 ```
+
+## Environment Variables
+
+The application requires the following environment variables:
+
+| Variable | Description |
+|----------|-------------|
+| MONGODB_URI | MongoDB connection string |
+
+Environment variables are validated at startup to ensure required configuration exists before the application runs.
+
+## Testing Strategy
+
+Due to time constraints, automated tests were not included.
+
+If extended further, the following flows would be prioritized:
+
+- idempotent POST retry behavior
+- duplicate-key race handling
+- validation failures
+- filtering and sorting correctness
+- dashboard aggregation accuracy
 
 ## Future Improvements
 
