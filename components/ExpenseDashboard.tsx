@@ -131,6 +131,8 @@ export function ExpenseDashboard() {
     (runningTotal, expense) => runningTotal + expense.amount,
     0
   );
+  const isInitialLoading = loading && expenses.length === 0;
+  const isRefreshing = loading && expenses.length > 0;
   const emptyMessage = selectedCategory.trim()
     ? "No expenses found for the current filters."
     : "No expenses recorded yet.";
@@ -187,13 +189,14 @@ export function ExpenseDashboard() {
         </div>
       </div>
 
-      {loading ? <p className="text-sm text-zinc-600">Loading expenses...</p> : null}
+      {isRefreshing ? <p className="text-sm text-zinc-600">Refreshing expenses...</p> : null}
+      {isInitialLoading ? <p className="text-sm text-zinc-600">Loading expenses...</p> : null}
       {error ? (
         <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {error}
         </p>
       ) : null}
-      {!loading && !error ? (
+      {!isInitialLoading && !error ? (
         <ExpenseTable expenses={expenses} emptyMessage={emptyMessage} />
       ) : null}
     </section>

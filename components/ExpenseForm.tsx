@@ -7,21 +7,26 @@ import type {
   ExpenseFormValues,
 } from "@/types/expense";
 
-const initialFormValues: ExpenseFormValues = {
-  amount: "",
-  category: "",
-  description: "",
-  date: "",
-};
+function getTodayDateValue(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function getInitialFormValues(): ExpenseFormValues {
+  return {
+    amount: "",
+    category: "",
+    description: "",
+    date: getTodayDateValue(),
+  };
+}
 
 export function ExpenseForm({ onSuccess }: ExpenseFormProps) {
-  const [formValues, setFormValues] = useState<ExpenseFormValues>(initialFormValues);
+  const [formValues, setFormValues] =
+    useState<ExpenseFormValues>(getInitialFormValues);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  function handleChange(
-    event: ChangeEvent<HTMLInputElement>
-  ) {
+  function handleChange(event: ChangeEvent<HTMLInputElement>) {
     const { name, value } = event.target;
 
     setFormValues((currentValues) => ({
@@ -57,11 +62,13 @@ export function ExpenseForm({ onSuccess }: ExpenseFormProps) {
       const payload = (await response.json()) as CreateExpenseResponse;
 
       if (!response.ok || !payload.success) {
-        setErrorMessage("error" in payload ? payload.error : "Failed to create expense");
+        setErrorMessage(
+          "error" in payload ? payload.error : "Failed to create expense",
+        );
         return;
       }
 
-      setFormValues(initialFormValues);
+      setFormValues(getInitialFormValues());
       onSuccess?.(payload.data);
     } catch {
       setErrorMessage("Failed to create expense");
@@ -76,8 +83,8 @@ export function ExpenseForm({ onSuccess }: ExpenseFormProps) {
         <span className="text-sm font-medium text-zinc-700">Amount (INR)</span>
         <input
           required
-          min="0.01"
-          step="0.01"
+          min="1"
+          step="1"
           type="number"
           name="amount"
           value={formValues.amount}
