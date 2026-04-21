@@ -28,7 +28,6 @@ const expenseSchema = new Schema(
     idempotencyKey: {
       type: String,
       required: true,
-      unique: true,
       trim: true,
     },
   },
