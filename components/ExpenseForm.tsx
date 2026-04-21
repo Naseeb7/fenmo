@@ -133,7 +133,7 @@ export function ExpenseForm({ onSuccess }: ExpenseFormProps) {
         disabled={isSubmitting}
         className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {isSubmitting ? "Saving..." : "Add Expense"}
+        {isSubmitting ? "Saving expense..." : "Add Expense"}
       </button>
     </form>
   );
