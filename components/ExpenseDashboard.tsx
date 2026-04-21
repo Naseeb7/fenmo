@@ -16,6 +16,8 @@ const sortOptions: Array<{ label: string; value: ExpenseSortOrder }> = [
   { label: "Expense date: oldest first", value: "date_asc" },
   { label: "Created time: newest first", value: "createdAt_desc" },
   { label: "Created time: oldest first", value: "createdAt_asc" },
+  { label: "Amount: highest first", value: "amount_desc" },
+  { label: "Amount: lowest first", value: "amount_asc" },
 ];
 
 export function ExpenseDashboard() {

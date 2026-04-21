@@ -17,6 +17,8 @@ const expenseSortOptions = {
   date_asc: { date: 1 as const },
   createdAt_desc: { createdAt: -1 as const },
   createdAt_asc: { createdAt: 1 as const },
+  amount_desc: { amount: -1 as const },
+  amount_asc: { amount: 1 as const },
 };
 
 type ExpenseSortOption = keyof typeof expenseSortOptions;

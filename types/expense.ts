@@ -34,7 +34,9 @@ export type ExpenseSortOrder =
   | "date_desc"
   | "date_asc"
   | "createdAt_desc"
-  | "createdAt_asc";
+  | "createdAt_asc"
+  | "amount_desc"
+  | "amount_asc";
 
 export type GetExpensesResponse =
   | {
