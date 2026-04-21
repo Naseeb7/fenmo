@@ -81,7 +81,7 @@ export async function POST(request: Request) {
     }
 
     const validatedInput = createExpenseSchema.parse(body);
-    const normalizedCategory = validatedInput.category.toLowerCase();
+    const normalizedCategory = validatedInput.category.trim().toLowerCase();
     const idempotencyKey = generateIdempotencyKey({
       amount: validatedInput.amount,
       category: normalizedCategory,
