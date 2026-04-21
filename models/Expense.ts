@@ -29,7 +29,6 @@ const expenseSchema = new Schema(
       type: String,
       required: true,
       unique: true,
-      index: true,
       trim: true,
     },
   },
@@ -37,6 +36,12 @@ const expenseSchema = new Schema(
     timestamps: true,
   }
 );
+
+expenseSchema.index({ idempotencyKey: 1 }, { unique: true });
+expenseSchema.index({ category: 1 });
+expenseSchema.index({ date: -1 });
+expenseSchema.index({ createdAt: -1 });
+expenseSchema.index({ amount: -1 });
 
 export type ExpenseDocument = InferSchemaType<typeof expenseSchema>;
 
