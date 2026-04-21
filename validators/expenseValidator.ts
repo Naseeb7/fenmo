@@ -75,8 +75,13 @@ export const createExpenseSchema = z.object({
     .string()
     .trim()
     .min(1, "Category is required")
+    .max(50, "Category must be 50 characters or fewer")
     .transform((value) => value.toLowerCase()),
-  description: z.string().trim().min(1, "Description is required"),
+  description: z
+    .string()
+    .trim()
+    .min(1, "Description is required")
+    .max(200, "Description must be 200 characters or fewer"),
   date: expenseDateSchema,
 });
 
