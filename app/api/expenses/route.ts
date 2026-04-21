@@ -79,9 +79,10 @@ export async function POST(request: Request) {
     }
 
     const validatedInput = createExpenseSchema.parse(body);
+    const normalizedCategory = validatedInput.category.toLowerCase();
     const idempotencyKey = generateIdempotencyKey({
       amount: validatedInput.amount,
-      category: validatedInput.category,
+      category: normalizedCategory,
       description: validatedInput.description,
       date: validatedInput.date,
     });
@@ -103,7 +104,7 @@ export async function POST(request: Request) {
     try {
       const expense = await Expense.create({
         amount: validatedInput.amount,
-        category: validatedInput.category,
+        category: normalizedCategory,
         description: validatedInput.description,
         date: validatedInput.date,
         idempotencyKey,
