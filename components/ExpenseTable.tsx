@@ -1,11 +1,14 @@
 import type { ExpenseRecord, ExpenseTableProps } from "@/types/expense";
 import { formatExpenseCurrency, formatExpenseDate } from "@/utils/expenseDisplay";
 
-export function ExpenseTable({ expenses }: ExpenseTableProps) {
+export function ExpenseTable({
+  expenses,
+  emptyMessage = "No expenses found for the current filters.",
+}: ExpenseTableProps) {
   if (expenses.length === 0) {
     return (
       <div className="rounded-2xl border border-zinc-200 bg-white p-6 text-sm text-zinc-500">
-        No expenses found for the current filters.
+        {emptyMessage}
       </div>
     );
   }

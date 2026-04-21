@@ -102,6 +102,9 @@ export function ExpenseDashboard() {
     (runningTotal, expense) => runningTotal + expense.amount,
     0
   );
+  const emptyMessage = selectedCategory.trim()
+    ? "No expenses found for the current filters."
+    : "No expenses recorded yet.";
 
   return (
     <section className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-10 sm:px-6 lg:px-8">
@@ -149,7 +152,9 @@ export function ExpenseDashboard() {
           {error}
         </p>
       ) : null}
-      {!loading && !error ? <ExpenseTable expenses={expenses} /> : null}
+      {!loading && !error ? (
+        <ExpenseTable expenses={expenses} emptyMessage={emptyMessage} />
+      ) : null}
     </section>
   );
 }

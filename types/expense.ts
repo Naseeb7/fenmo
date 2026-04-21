@@ -48,4 +48,5 @@ export type GetExpensesResponse =
 
 export type ExpenseTableProps = {
   expenses: ExpenseRecord[];
+  emptyMessage?: string;
 };
