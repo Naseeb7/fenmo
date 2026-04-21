@@ -17,12 +17,12 @@ import {
 } from "@/utils/expenseDisplay";
 
 const sortOptions: Array<{ label: string; value: ExpenseSortOrder }> = [
-  { label: "Expense date: newest first", value: "date_desc" },
-  { label: "Expense date: oldest first", value: "date_asc" },
-  { label: "Created time: newest first", value: "createdAt_desc" },
-  { label: "Created time: oldest first", value: "createdAt_asc" },
-  { label: "Amount: highest first", value: "amount_desc" },
-  { label: "Amount: lowest first", value: "amount_asc" },
+  { label: "Newest expenses first", value: "date_desc" },
+  { label: "Oldest expenses first", value: "date_asc" },
+  { label: "Recently added first", value: "createdAt_desc" },
+  { label: "Added earlier first", value: "createdAt_asc" },
+  { label: "Highest amount first", value: "amount_desc" },
+  { label: "Lowest amount first", value: "amount_asc" },
 ];
 
 export function ExpenseDashboard() {
@@ -166,33 +166,33 @@ export function ExpenseDashboard() {
       <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
         <div className="mb-6">
           <p className="text-sm font-medium uppercase tracking-[0.2em] text-zinc-500">
-            Expense Tracker
+            Spend Tracker
           </p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-950">
-            Track spending with a backend-first workflow.
+            Keep track of your spending in one place.
           </h1>
         </div>
         <ExpenseForm onSuccess={handleExpenseCreated} />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <div className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
           <p className="text-xs font-medium uppercase tracking-[0.18em] text-zinc-500">
-            Total spend
+            Total spent
           </p>
-          <p className="mt-2 text-3xl font-semibold text-zinc-950">
+          <p className="mt-2 break-words text-2xl font-semibold text-zinc-950 sm:text-3xl">
             {formatExpenseCurrency(summary?.totalAmount ?? 0)}
           </p>
           <p className="mt-2 text-sm text-zinc-500">
-            {summary?.expenseCount ?? 0} recorded expenses
+            {summary?.expenseCount ?? 0} expenses added
           </p>
         </div>
 
         <div className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
           <p className="text-xs font-medium uppercase tracking-[0.18em] text-zinc-500">
-            Largest expense
+            Biggest expense
           </p>
-          <p className="mt-2 text-3xl font-semibold text-zinc-950">
+          <p className="mt-2 break-words text-2xl font-semibold text-zinc-950 sm:text-3xl">
             {formatExpenseCurrency(summary?.highestExpense?.amount ?? 0)}
           </p>
           <p className="mt-2 text-sm text-zinc-500">
@@ -211,9 +211,9 @@ export function ExpenseDashboard() {
               summary.topCategories.map((item) => (
                 <div
                   key={item.category}
-                  className="flex items-center justify-between rounded-2xl bg-zinc-50 px-3 py-2"
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-zinc-50 px-3 py-2"
                 >
-                  <span className="text-sm text-zinc-700">
+                  <span className="min-w-0 text-sm text-zinc-700">
                     {formatExpenseCategory(item.category)}
                   </span>
                   <span className="text-sm font-medium text-zinc-950">
@@ -229,26 +229,26 @@ export function ExpenseDashboard() {
       </div>
 
       <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
-        <div className="mb-4 flex items-center justify-between gap-3">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-sm font-medium uppercase tracking-[0.2em] text-zinc-500">
-              Category Totals
+              Category Summary
             </p>
             <h2 className="mt-2 text-2xl font-semibold tracking-tight text-zinc-950">
-              Spend by category
+              Spending by category
             </h2>
           </div>
-          <p className="text-sm text-zinc-500">All-time totals from the dashboard summary</p>
+          <p className="text-sm text-zinc-500">A quick look at where your money is going</p>
         </div>
 
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {summary && summary.categoryTotals.length > 0 ? (
             summary.categoryTotals.map((item) => (
               <div
                 key={item.category}
-                className="flex items-center justify-between rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3"
+                className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3"
               >
-                <span className="text-sm font-medium text-zinc-700">
+                <span className="min-w-0 text-sm font-medium text-zinc-700">
                   {formatExpenseCategory(item.category)}
                 </span>
                 <span className="text-sm font-semibold text-zinc-950">
@@ -262,9 +262,9 @@ export function ExpenseDashboard() {
         </div>
       </div>
 
-      <div className="grid gap-4 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm md:grid-cols-[minmax(0,1fr)_auto_auto] md:items-end">
+      <div className="grid gap-4 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] xl:items-end">
         <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium text-zinc-700">Filter by category</span>
+          <span className="text-sm font-medium text-zinc-700">Category</span>
           <select
             value={selectedCategory}
             onChange={(event) => handleCategoryChange(event.target.value)}
@@ -280,7 +280,7 @@ export function ExpenseDashboard() {
         </label>
 
         <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium text-zinc-700">Sort by</span>
+          <span className="text-sm font-medium text-zinc-700">Sort</span>
           <select
             value={sortOrder}
             onChange={(event) => handleSortChange(event.target.value as ExpenseSortOrder)}
@@ -294,14 +294,16 @@ export function ExpenseDashboard() {
           </select>
         </label>
 
-        <div className="rounded-2xl bg-zinc-950 px-4 py-3 text-white">
+        <div className="rounded-2xl bg-zinc-950 px-4 py-3 text-white sm:col-span-2 xl:col-span-1">
           <p className="text-xs uppercase tracking-[0.18em] text-zinc-400">Visible total</p>
-          <p className="mt-1 text-2xl font-semibold">{formatExpenseCurrency(totalVisibleAmount)}</p>
+          <p className="mt-1 break-words text-2xl font-semibold">
+            {formatExpenseCurrency(totalVisibleAmount)}
+          </p>
         </div>
       </div>
 
-      {isRefreshing ? <p className="text-sm text-zinc-600">Refreshing expenses...</p> : null}
-      {isInitialLoading ? <p className="text-sm text-zinc-600">Loading expenses...</p> : null}
+      {isRefreshing ? <p className="text-sm text-zinc-600">Updating your expenses...</p> : null}
+      {isInitialLoading ? <p className="text-sm text-zinc-600">Loading your expenses...</p> : null}
       {error ? (
         <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {error}
