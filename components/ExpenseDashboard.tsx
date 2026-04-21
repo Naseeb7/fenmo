@@ -11,6 +11,13 @@ import type {
 } from "@/types/expense";
 import { formatExpenseCurrency } from "@/utils/expenseDisplay";
 
+const sortOptions: Array<{ label: string; value: ExpenseSortOrder }> = [
+  { label: "Expense date: newest first", value: "date_desc" },
+  { label: "Expense date: oldest first", value: "date_asc" },
+  { label: "Created time: newest first", value: "createdAt_desc" },
+  { label: "Created time: oldest first", value: "createdAt_asc" },
+];
+
 export function ExpenseDashboard() {
   const [expenses, setExpenses] = useState<ExpenseRecord[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
@@ -106,12 +113,10 @@ export function ExpenseDashboard() {
     setSelectedCategory(category);
   }
 
-  function handleSortToggle() {
+  function handleSortChange(sort: ExpenseSortOrder) {
     setLoading(true);
     setError(null);
-    setSortOrder((currentSortOrder) =>
-      currentSortOrder === "date_desc" ? "date_asc" : "date_desc"
-    );
+    setSortOrder(sort);
   }
 
   function handleExpenseCreated() {
@@ -159,13 +164,20 @@ export function ExpenseDashboard() {
           </select>
         </label>
 
-        <button
-          type="button"
-          onClick={handleSortToggle}
-          className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700"
-        >
-          Sort: {sortOrder === "date_desc" ? "Newest first" : "Oldest first"}
-        </button>
+        <label className="flex flex-col gap-1">
+          <span className="text-sm font-medium text-zinc-700">Sort by</span>
+          <select
+            value={sortOrder}
+            onChange={(event) => handleSortChange(event.target.value as ExpenseSortOrder)}
+            className="rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-900"
+          >
+            {sortOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
 
         <div className="rounded-2xl bg-zinc-950 px-4 py-3 text-white">
           <p className="text-xs uppercase tracking-[0.18em] text-zinc-400">Visible total</p>
