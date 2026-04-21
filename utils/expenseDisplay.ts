@@ -9,3 +9,11 @@ export function formatExpenseDate(date: string): string {
     year: "numeric",
   }).format(new Date(date));
 }
+
+export function formatExpenseCategory(category: string): string {
+  return category
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}

@@ -1,5 +1,9 @@
 import type { ExpenseRecord, ExpenseTableProps } from "@/types/expense";
-import { formatExpenseCurrency, formatExpenseDate } from "@/utils/expenseDisplay";
+import {
+  formatExpenseCategory,
+  formatExpenseCurrency,
+  formatExpenseDate,
+} from "@/utils/expenseDisplay";
 
 export function ExpenseTable({
   expenses,
@@ -38,7 +42,9 @@ export function ExpenseTable({
               <td className="px-4 py-3 text-sm text-zinc-700">
                 {formatExpenseDate(expense.date)}
               </td>
-              <td className="px-4 py-3 text-sm capitalize text-zinc-700">{expense.category}</td>
+              <td className="px-4 py-3 text-sm text-zinc-700">
+                {formatExpenseCategory(expense.category)}
+              </td>
               <td className="px-4 py-3 text-sm text-zinc-700">{expense.description}</td>
               <td className="px-4 py-3 text-right text-sm font-medium text-zinc-900">
                 {formatExpenseCurrency(expense.amount)}
