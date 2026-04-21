@@ -61,7 +61,7 @@ export function ExpenseDashboard() {
           isActive &&
           !(fetchError instanceof DOMException && fetchError.name === "AbortError")
         ) {
-          setError("Failed to load expenses");
+          setError("Network error. Please retry.");
         }
       } finally {
         if (isActive) {
