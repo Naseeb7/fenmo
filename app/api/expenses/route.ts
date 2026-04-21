@@ -15,8 +15,8 @@ const DEFAULT_EXPENSE_SORT = "date_desc";
 const expenseSortOptions = {
   date_desc: { date: -1 as const },
   date_asc: { date: 1 as const },
-  created_at_desc: { createdAt: -1 as const },
-  created_at_asc: { createdAt: 1 as const },
+  createdAt_desc: { createdAt: -1 as const },
+  createdAt_asc: { createdAt: 1 as const },
 };
 
 type ExpenseSortOption = keyof typeof expenseSortOptions;
@@ -34,7 +34,12 @@ export async function GET(request: Request) {
         ? (rawSort as ExpenseSortOption)
         : DEFAULT_EXPENSE_SORT;
 
-    const query = category ? { category } : {};
+    const query: Record<string, unknown> = {};
+
+    if (category) {
+      query.category = category;
+    }
+
     const sortOption = expenseSortOptions[sort];
 
     const expenses = await Expense.find(query).sort(sortOption).lean();
