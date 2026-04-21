@@ -16,7 +16,7 @@ export type ExpenseRecord = {
 };
 
 export type ExpenseFormProps = {
-  onSuccess?: (expense: ExpenseRecord) => void;
+  onSuccess?: (expense: ExpenseRecord) => void | Promise<void>;
 };
 
 export type CreateExpenseResponse =
