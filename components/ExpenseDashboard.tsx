@@ -3,27 +3,49 @@
 import { useEffect, useState } from "react";
 import { ExpenseForm } from "@/components/ExpenseForm";
 import { ExpenseTable } from "@/components/ExpenseTable";
-import type { ExpenseRecord, ExpenseSortOrder, GetExpensesResponse } from "@/types/expense";
+import type {
+  ExpenseRecord,
+  ExpenseSortOrder,
+  GetExpenseCategoriesResponse,
+  GetExpensesResponse,
+} from "@/types/expense";
 import { formatExpenseCurrency } from "@/utils/expenseDisplay";
 
 export function ExpenseDashboard() {
   const [expenses, setExpenses] = useState<ExpenseRecord[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [debouncedCategory, setDebouncedCategory] = useState("");
   const [sortOrder, setSortOrder] = useState<ExpenseSortOrder>("date_desc");
   const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
-    const timeoutId = window.setTimeout(() => {
-      setDebouncedCategory(selectedCategory);
-    }, 300);
+    let isActive = true;
+
+    async function loadCategories() {
+      try {
+        const response = await fetch("/api/expenses/categories");
+        const payload = (await response.json()) as GetExpenseCategoriesResponse;
+
+        if (!response.ok || !payload.success) {
+          return;
+        }
+
+        if (isActive) {
+          setCategories(payload.data);
+        }
+      } catch {
+        // Keep the filter usable even if categories fail to load.
+      }
+    }
+
+    void loadCategories();
 
     return () => {
-      window.clearTimeout(timeoutId);
+      isActive = false;
     };
-  }, [selectedCategory]);
+  }, [refreshKey]);
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -33,8 +55,8 @@ export function ExpenseDashboard() {
       try {
         const searchParams = new URLSearchParams();
 
-        if (debouncedCategory.trim()) {
-          searchParams.set("category", debouncedCategory.trim());
+        if (selectedCategory.trim()) {
+          searchParams.set("category", selectedCategory.trim());
         }
 
         searchParams.set("sort", sortOrder);
@@ -76,7 +98,7 @@ export function ExpenseDashboard() {
       isActive = false;
       abortController.abort();
     };
-  }, [debouncedCategory, refreshKey, sortOrder]);
+  }, [refreshKey, selectedCategory, sortOrder]);
 
   function handleCategoryChange(category: string) {
     setLoading(true);
@@ -123,13 +145,18 @@ export function ExpenseDashboard() {
       <div className="grid gap-4 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm md:grid-cols-[minmax(0,1fr)_auto_auto] md:items-end">
         <label className="flex flex-col gap-1">
           <span className="text-sm font-medium text-zinc-700">Filter by category</span>
-          <input
-            type="text"
+          <select
             value={selectedCategory}
             onChange={(event) => handleCategoryChange(event.target.value)}
-            placeholder="e.g. food"
             className="rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-900"
-          />
+          >
+            <option value="">All categories</option>
+            {categories.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
         </label>
 
         <button

@@ -46,6 +46,16 @@ export type GetExpensesResponse =
       error: string;
     };
 
+export type GetExpenseCategoriesResponse =
+  | {
+      success: true;
+      data: string[];
+    }
+  | {
+      success: false;
+      error: string;
+    };
+
 export type ExpenseTableProps = {
   expenses: ExpenseRecord[];
   emptyMessage?: string;
